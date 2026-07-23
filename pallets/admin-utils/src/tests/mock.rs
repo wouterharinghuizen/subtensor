@@ -398,7 +398,9 @@ impl crate::GrandpaInterface<Test> for GrandpaInterfaceImpl {
         in_blocks: BlockNumber,
         forced: Option<BlockNumber>,
     ) -> sp_runtime::DispatchResult {
-        Grandpa::schedule_change(next_authorities, in_blocks, forced)
+        Grandpa::schedule_change(next_authorities, in_blocks, forced)?;
+        pallet_grandpa::CurrentSetId::<Test>::mutate(|set_id| *set_id += 1);
+        Ok(())
     }
 }
 

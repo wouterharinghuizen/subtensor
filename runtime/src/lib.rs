@@ -235,7 +235,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     //   `spec_version`, and `authoring_version` are the same between Wasm and native.
     // This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
     //   the compatible custom types.
-    spec_version: 437,
+    spec_version: 438,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -998,7 +998,11 @@ impl pallet_admin_utils::GrandpaInterface<Runtime> for GrandpaInterfaceImpl {
         in_blocks: BlockNumber,
         forced: Option<BlockNumber>,
     ) -> sp_runtime::DispatchResult {
-        Grandpa::schedule_change(next_authorities, in_blocks, forced)
+        Grandpa::schedule_change(next_authorities, in_blocks, forced)?;
+        // This runtime does not use pallet-session, so mirror the bookkeeping performed by
+        // pallet-grandpa's session handler after it successfully schedules an authority change.
+        pallet_grandpa::CurrentSetId::<Runtime>::mutate(|set_id| *set_id += 1);
+        Ok(())
     }
 }
 
